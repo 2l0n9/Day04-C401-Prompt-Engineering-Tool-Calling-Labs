@@ -268,6 +268,88 @@ with st.sidebar:
     st.markdown(f"<div class='msg-note'>{last_tools}</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
+    st.markdown("<div class='sidebar-card'>", unsafe_allow_html=True)
+    st.markdown("<div class='sidebar-title'>Lich su (Past Sessions)</div>", unsafe_allow_html=True)
+
+    if TRANSCRIPTS_DIR.exists():
+        transcript_files = sorted(
+            list(TRANSCRIPTS_DIR.glob("*.json")),
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        )
+        if transcript_files:
+            options = {path: path.stem.replace(".transcript", "") for path in transcript_files}
+            labels = ["Select to review..."] + [options[path] for path in transcript_files]
+            selected_label = st.selectbox("Past sessions", options=labels, index=0)
+            selected_file = None
+            if selected_label != labels[0]:
+                selected_file = next(
+                    (path for path, label in options.items() if label == selected_label),
+                    None,
+                )
+
+            if selected_file and st.button("Load history", use_container_width=True):
+                with selected_file.open("r", encoding="utf-8") as handle:
+                    loaded_data = json.load(handle)
+
+                st.session_state.messages = []
+                st.session_state.history = []
+                calls_count = 0
+                errors_count = 0
+                history_last_tools = []
+
+                for turn in loaded_data.get("turns", []):
+                    user_text = turn.get("user", "")
+                    assistant_text = turn.get("assistant_text", "")
+                    tool_events = turn.get("tool_events", [])
+
+                    reconstructed_tool_calls = []
+                    for event in tool_events:
+                        status = "err" if "error" in (event.get("result") or {}) else "ok"
+                        if status == "err":
+                            errors_count += 1
+                        calls_count += 1
+                        history_last_tools.append(event.get("tool"))
+                        reconstructed_tool_calls.append(
+                            {
+                                "name": event.get("tool"),
+                                "args": event.get("args"),
+                                "status": status,
+                            }
+                        )
+
+                    if user_text:
+                        st.session_state.messages.append(
+                            {"role": "user", "content": user_text, "tool_calls": []}
+                        )
+                        st.session_state.history.append({"role": "user", "content": user_text})
+
+                    st.session_state.messages.append(
+                        {
+                            "role": "assistant",
+                            "content": assistant_text,
+                            "tool_calls": reconstructed_tool_calls,
+                        }
+                    )
+                    st.session_state.history.append({"role": "assistant", "content": assistant_text})
+
+                st.session_state.stats = {
+                    "turns": len(loaded_data.get("turns", [])),
+                    "calls": calls_count,
+                    "errors": errors_count,
+                    "last_tools": list(set(history_last_tools)),
+                }
+                st.session_state.transcript = loaded_data
+                st.session_state.transcript_path = selected_file
+
+                st.rerun()
+        else:
+            st.markdown("<div class='msg-note'>Chua co lich su nao.</div>", unsafe_allow_html=True)
+    else:
+        st.markdown("<div class='msg-note'>Chua co lich su nao.</div>", unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
 st.markdown("<div class='chat-wrap'>", unsafe_allow_html=True)
 
 for msg in st.session_state.messages:
