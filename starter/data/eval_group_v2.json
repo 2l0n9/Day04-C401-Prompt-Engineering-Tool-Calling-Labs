@@ -1,0 +1,100 @@
+{
+  "dataset_id": "day04_v2_group_v2_translate_text",
+  "dataset_role": "group",
+  "description": "Cases do nhóm viết cho v2 — kiểm tra tool translate_text: routing đúng, đúng args (text, target_language, source_language), hỏi lại khi thiếu, không dịch khi không được yêu cầu.",
+  "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
+  "cases": [
+    {
+      "id": "T01_translate_routing_vi_to_en",
+      "phase": "B",
+      "query": "Dịch câu sau sang tiếng Anh: Trí tuệ nhân tạo đang thay đổi thế giới.",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "translate_text", "args": {"text": "Trí tuệ nhân tạo đang thay đổi thế giới.", "target_language": "en"}}]},
+      "metadata": {
+        "skill": "routing_translate_text",
+        "difficulty": "easy",
+        "what_it_tests": "User nói 'dịch' kèm văn bản → translate_text với target_language=en."
+      }
+    },
+    {
+      "id": "T02_translate_target_japanese",
+      "phase": "B",
+      "query": "Dịch 'Hello, how are you?' sang tiếng Nhật",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "translate_text", "args": {"text": "Hello, how are you?", "target_language": "ja"}}]},
+      "metadata": {
+        "skill": "arg_target_language_japanese",
+        "difficulty": "medium",
+        "what_it_tests": "'tiếng Nhật' → target_language=ja (hoặc 'japanese'), không phải để mặc định vi."
+      }
+    },
+    {
+      "id": "T03_translate_target_korean",
+      "phase": "B",
+      "query": "Chuyển đoạn này sang tiếng Hàn: Artificial intelligence is transforming every industry.",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "translate_text", "args": {"text": "Artificial intelligence is transforming every industry.", "target_language": "ko"}}]},
+      "metadata": {
+        "skill": "arg_target_language_korean",
+        "difficulty": "medium",
+        "what_it_tests": "'tiếng Hàn' → target_language=ko (hoặc 'korean')."
+      }
+    },
+    {
+      "id": "T04_translate_missing_text",
+      "phase": "B",
+      "query": "Dịch sang tiếng Pháp giúp mình",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "ask_user", "args": {"response_type": "text"}}]},
+      "metadata": {
+        "skill": "clarify_missing_text_to_translate",
+        "difficulty": "medium",
+        "what_it_tests": "Thiếu văn bản cần dịch → ask_user xin nội dung, không đoán."
+      }
+    },
+    {
+      "id": "T05_no_translate_when_not_asked",
+      "phase": "B",
+      "query": "Tìm tweet mới nhất của karpathy",
+      "failure_type": "unnecessary_tool",
+      "expect": {"tool_calls": [{"name": "get_user_tweets", "args": {"screenname": "karpathy"}}]},
+      "metadata": {
+        "skill": "not_translate_unless_asked",
+        "difficulty": "easy",
+        "what_it_tests": "Không tự ý dịch kết quả khi user chỉ hỏi tweet → chỉ gọi get_user_tweets."
+      }
+    },
+    {
+      "id": "T06_multiturn_translate_language_correction",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Dịch đoạn này sang tiếng Tây Ban Nha: The future of AI is bright."},
+        {"role": "user", "content": "Thôi đổi sang tiếng Đức đi"},
+        {"role": "user", "content": "Giữ nguyên đoạn văn đó nhé"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "translate_text", "args": {"text": "The future of AI is bright.", "target_language": "de"}}]},
+      "metadata": {
+        "skill": "multiturn_translate_correction",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: carry text, sửa target_language từ Tây Ban Nha (es) → Đức (de) theo lượt 2."
+      }
+    },
+    {
+      "id": "T07_translate_wikipedia_result",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tìm Wikipedia về Isaac Newton"},
+        {"role": "user", "content": "Dịch kết quả đó sang tiếng Việt giúp mình"},
+        {"role": "user", "content": "Chỉ dịch phần mô tả thôi"}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "translate_text", "args": {"target_language": "vi"}}]},
+      "metadata": {
+        "skill": "multiturn_translate_after_search",
+        "difficulty": "hard",
+        "what_it_tests": "Sau khi đã có kết quả Wikipedia, user yêu cầu dịch → translate_text target_language=vi, không gọi lại search_wikipedia."
+      }
+    }
+  ]
+}

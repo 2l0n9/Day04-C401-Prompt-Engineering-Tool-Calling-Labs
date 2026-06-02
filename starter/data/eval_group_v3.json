@@ -1,0 +1,112 @@
+{
+  "dataset_id": "day04_v2_group_v3_summarize_wikipedia",
+  "dataset_role": "group",
+  "description": "Cases do nhóm viết cho v3 — kiểm tra tool summarize_wikipedia: routing đúng (phân biệt với search_wikipedia), đúng args (person_name, max_sentences, language), hỏi lại khi thiếu, và multi-turn tóm tắt sau tìm kiếm.",
+  "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
+  "cases": [
+    {
+      "id": "S01_summarize_wikipedia_routing",
+      "phase": "B",
+      "query": "Tóm tắt ngắn Wikipedia về Stephen Hawking cho mình",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "summarize_wikipedia", "args": {"person_name": "Stephen Hawking"}}]},
+      "metadata": {
+        "skill": "routing_summarize_wikipedia",
+        "difficulty": "easy",
+        "what_it_tests": "'Tóm tắt ngắn Wikipedia' + tên người → summarize_wikipedia, không phải search_wikipedia hay web_search."
+      }
+    },
+    {
+      "id": "S02_summarize_vs_search_distinction",
+      "phase": "B",
+      "query": "Cho mình đọc toàn bộ phần mở đầu Wikipedia về Ada Lovelace",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "search_wikipedia", "args": {"person_name": "Ada Lovelace"}}]},
+      "metadata": {
+        "skill": "routing_search_not_summarize",
+        "difficulty": "medium",
+        "what_it_tests": "User muốn đọc 'toàn bộ phần mở đầu' → search_wikipedia (nhiều nội dung hơn), không phải summarize_wikipedia."
+      }
+    },
+    {
+      "id": "S03_summarize_max_sentences_arg",
+      "phase": "B",
+      "query": "Tóm tắt Wikipedia về Marie Curie trong 2 câu thôi",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "summarize_wikipedia", "args": {"person_name": "Marie Curie", "max_sentences": 2}}]},
+      "metadata": {
+        "skill": "arg_max_sentences_summarize",
+        "difficulty": "medium",
+        "what_it_tests": "'2 câu thôi' → max_sentences=2, không để mặc định 3."
+      }
+    },
+    {
+      "id": "S04_summarize_language_arg",
+      "phase": "B",
+      "query": "Tóm tắt Wikipedia tiếng Nhật về Akira Kurosawa",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "summarize_wikipedia", "args": {"person_name": "Akira Kurosawa", "language": "ja"}}]},
+      "metadata": {
+        "skill": "arg_language_summarize",
+        "difficulty": "medium",
+        "what_it_tests": "'Wikipedia tiếng Nhật' → language=ja, không để mặc định en."
+      }
+    },
+    {
+      "id": "S05_summarize_missing_person",
+      "phase": "B",
+      "query": "Tóm tắt Wikipedia đi",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "ask_user", "args": {"response_type": "text"}}]},
+      "metadata": {
+        "skill": "clarify_missing_person_summarize",
+        "difficulty": "medium",
+        "what_it_tests": "Thiếu tên người cần tóm tắt → ask_user, không đoán tùy tiện."
+      }
+    },
+    {
+      "id": "S06_multiturn_summarize_then_translate",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tóm tắt Wikipedia về Nelson Mandela"},
+        {"role": "user", "content": "Dịch bản tóm tắt đó sang tiếng Việt"},
+        {"role": "user", "content": "Chỉ 1 câu thôi nhé"}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "translate_text", "args": {"target_language": "vi"}}]},
+      "metadata": {
+        "skill": "multiturn_summarize_then_translate",
+        "difficulty": "hard",
+        "what_it_tests": "Sau khi đã tóm tắt, user yêu cầu dịch → translate_text target_language=vi, không gọi lại summarize_wikipedia."
+      }
+    },
+    {
+      "id": "S07_multiturn_correction_person",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tóm tắt Wikipedia về Thomas Edison"},
+        {"role": "user", "content": "Nhầm, mình muốn Nikola Tesla"},
+        {"role": "user", "content": "Tóm tắt 5 câu nhé"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "summarize_wikipedia", "args": {"person_name": "Nikola Tesla", "max_sentences": 5}}]},
+      "metadata": {
+        "skill": "multiturn_correction_and_arg",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: sửa person_name từ Edison → Tesla theo lượt 2, set max_sentences=5 từ lượt 3."
+      }
+    },
+    {
+      "id": "S08_summarize_out_of_scope_concept",
+      "phase": "B",
+      "query": "Tóm tắt Wikipedia về khái niệm machine learning",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "summarize_wikipedia", "args": {"person_name": "machine learning"}}]},
+      "metadata": {
+        "skill": "summarize_wikipedia_non_person",
+        "difficulty": "medium",
+        "what_it_tests": "Tool không chỉ dành cho người — khái niệm/chủ đề cũng dùng summarize_wikipedia được nếu user nói rõ 'Wikipedia'."
+      }
+    }
+  ]
+}
