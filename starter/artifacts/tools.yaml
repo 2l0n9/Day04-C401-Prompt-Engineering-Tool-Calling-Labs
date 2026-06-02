@@ -99,6 +99,36 @@ tools:
         sort_by: {type: string, enum: [relevance, lastUpdatedDate, submittedDate], default: "relevance", description: "Cách sort kết quả"}
       required: [query]
 
+  - name: search_wikipedia
+    description: "Tìm thông tin về MỘT người trên Wikipedia. Dùng khi user hỏi 'Wikipedia về <người>' hoặc muốn biết thông tin tiểu sử/lý lịch từ Wikipedia. Trả về nội dung phần mở đầu của bài Wikipedia."
+    parameters:
+      type: object
+      properties:
+        person_name: {type: string, default: "", description: "Tên người cần tìm trên Wikipedia, ví dụ: 'Elon Musk', 'Albert Einstein'"}
+        sentences: {type: integer, default: 5, description: "Số câu đầu muốn lấy từ bài Wikipedia"}
+        language: {type: string, default: "en", description: "Mã ngôn ngữ Wikipedia, ví dụ: en, vi, fr, ja"}
+      required: [person_name]
+
+  - name: translate_text
+    description: "Dịch văn bản sang ngôn ngữ mà user chọn. Dùng khi user yêu cầu dịch hoặc muốn kết quả bằng một ngôn ngữ khác. Hỗ trợ: english, vietnamese, french, spanish, german, japanese, korean, chinese, thai, italian, portuguese, russian, arabic, hindi."
+    parameters:
+      type: object
+      properties:
+        text: {type: string, default: "", description: "Đoạn văn bản cần dịch"}
+        target_language: {type: string, default: "vi", description: "Ngôn ngữ đích: tên đầy đủ (vietnamese, french...) hoặc mã ISO (vi, fr, ja...)"}
+        source_language: {type: string, default: "auto", description: "Ngôn ngữ nguồn, để 'auto' để tự phát hiện"}
+      required: [text, target_language]
+
+  - name: summarize_wikipedia
+    description: "Tóm tắt ngắn gọn bài Wikipedia về một người. Dùng khi user muốn 'tóm tắt Wikipedia', 'giới thiệu ngắn', hoặc 'Wikipedia tóm gọn' về một nhân vật. Khác với search_wikipedia ở chỗ luôn trả về đoạn tóm tắt súc tích nhất."
+    parameters:
+      type: object
+      properties:
+        person_name: {type: string, default: "", description: "Tên người cần tóm tắt trên Wikipedia"}
+        max_sentences: {type: integer, default: 3, description: "Số câu tóm tắt tối đa"}
+        language: {type: string, default: "en", description: "Mã ngôn ngữ Wikipedia, ví dụ: en, vi, fr"}
+      required: [person_name]
+
   - name: get_arxiv_paper_text
     description: "(BONUS RESEARCH) Tải PDF arXiv và trích text cục bộ bằng pypdf. Dùng khi user đưa arXiv ID/URL và muốn đọc/tóm tắt nội dung paper."
     parameters:

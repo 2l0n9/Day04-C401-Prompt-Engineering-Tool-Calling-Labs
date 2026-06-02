@@ -15,6 +15,9 @@ from .search_company_policy.tool import search_company_policy
 from .search_tweets.tool import search_tweets
 from .send_telegram.tool import send_telegram
 from .web_search.tool import web_search
+from .search_wikipedia.tool import search_wikipedia
+from .translate_text.tool import translate_text
+from .summarize_wikipedia.tool import summarize_wikipedia
 
 
 TOOL_FUNCTIONS = {
@@ -28,6 +31,9 @@ TOOL_FUNCTIONS = {
     "search_company_policy": search_company_policy,
     "arxiv_search": arxiv_search,
     "get_arxiv_paper_text": get_arxiv_paper_text,
+    "search_wikipedia": search_wikipedia,
+    "translate_text": translate_text,
+    "summarize_wikipedia": summarize_wikipedia,
 }
 
 
