@@ -17,7 +17,8 @@ def search_wikipedia(person_name: str = "", sentences: int = 5, language: str = 
             "format": "json",
             "srlimit": 1,
         }
-        search_resp = requests.get(search_url, params=search_params, timeout=TIMEOUT)
+        headers = {"User-Agent": "ResearchAgent/1.0 (research-lab; contact@example.com)"}
+        search_resp = requests.get(search_url, params=search_params, headers=headers, timeout=TIMEOUT)
         search_resp.raise_for_status()
         search_data = search_resp.json()
         results = search_data.get("query", {}).get("search", [])
@@ -35,7 +36,7 @@ def search_wikipedia(person_name: str = "", sentences: int = 5, language: str = 
             "inprop": "url",
             "format": "json",
         }
-        extract_resp = requests.get(search_url, params=extract_params, timeout=TIMEOUT)
+        extract_resp = requests.get(search_url, params=extract_params, headers=headers, timeout=TIMEOUT)
         extract_resp.raise_for_status()
         extract_data = extract_resp.json()
         pages = extract_data.get("query", {}).get("pages", {})
