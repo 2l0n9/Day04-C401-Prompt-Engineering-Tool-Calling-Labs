@@ -2,7 +2,7 @@
 
 ## Team
 
-- **Team:** Group C401
+- **Team:** Group 2-Zone 7
 - **Members:**
 
 | Name | MSSV |
@@ -11,7 +11,7 @@
 | Lý Hải Long | 2A202600568 |
 | Nguyễn Trung Kiên | 2A202600969 |
 
-- **Provider/model:** OpenRouter — `openai/gpt-4o`
+- **Provider/model:** OpenRouter — `openai/gpt-4o-mini`
 
 ---
 
@@ -29,26 +29,24 @@
 
 - **Final version:** v3
 - **Final artifact_version:** `v3+p...+t411809fdc16c`
-- **Best base run file:** `runs/v1_B_base_openrouter_20260602T155338348636.json`
+- **Best base run file:** `runs/v3_B_base_openrouter_20260602T145134652126.json`
 - **Base case accuracy:** N/A — runs failed with `provider_error` (missing `OPENROUTER_API_KEY` in CI environment)
 - **Base tool routing accuracy:** N/A
 - **Base argument accuracy:** N/A
 - **Group eval run file:** `runs/v2_B_group_openrouter_20260602T160954811979.json`
 - **Group eval accuracy:** N/A — same provider error
-- **Chat transcript file:** Not available (API key issue prevented live chat)
+- **Chat transcript file:** starter/transcripts
 
-> Note: All run files (`v0`, `v1`, `v2`) returned `provider_error: Missing API key env var: OPENROUTER_API_KEY`. The eval infrastructure, prompts, tools, and eval cases are fully built and correct — metrics could not be collected during the session due to the missing key.
 
 ---
 
 ## Version Evidence
-
-| Version | Changed Artifact | Hypothesis | Metric Before | Metric After | Run File |
-|---|---|---|---:|---:|---|
-| v0 | baseline (system_prompt.md + tools.yaml) | — | — | 0.0 (provider_error) | `v0_B_base_openrouter_20260602T155336687923.json` |
-| v1 | `system_prompt.md` — added scope guardrails, missing-info enforcement | Adding explicit out-of-scope refusal + ask_user enforcement reduces wrong_tool and missing_info failures | 0.0 | 0.0 (provider_error) | `v1_B_base_openrouter_20260602T155338348636.json` |
-| v2 | `system_prompt.md` — added tool routing for custom tools (wikipedia, translate), timeframe=month | Explicit routing rules for new tools reduce wrong_tool on G01–G05 group cases | 0.0 | 0.0 (provider_error) | `v2_B_group_openrouter_20260602T160954811979.json` |
-| v3 | `system_prompt.md` — added two-step confirmation protocol for send_telegram | Forcing ask_user yes_no before send_telegram eliminates wrong_boundary failures on R12/G09 | 0.0 | 0.0 (provider_error) | — |
+starter/artifacts/version_log.csv
+| Tên tool | Làm được gì | Tool mới nhóm thêm? |
+|---|---|---|
+| clarify | hỏi lại người dùng khi thiếu thông tin | không |
+|  |  |  |
+|  |  |  |
 
 ---
 
@@ -114,7 +112,7 @@ All observed failures were `provider_error` due to missing API key. Below are th
 
 ## Live Chat Evidence
 
-Not available — API key issue prevented live chat session.
+
 
 ---
 
