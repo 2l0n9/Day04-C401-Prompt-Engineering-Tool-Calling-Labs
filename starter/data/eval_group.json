@@ -1,7 +1,108 @@
 {
   "dataset_id": "day04_v2_research_group",
   "dataset_role": "group",
-  "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
+  "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. 5 single-turn + 5 multi-turn. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
   "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "cases": [
+    {
+      "id": "G01_wikipedia_vs_web_search",
+      "phase": "B",
+      "query": "Cho mình thông tin Wikipedia về Elon Musk",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "search_wikipedia", "args": {"person_name": "Elon Musk"}}]},
+      "metadata": {"skill": "routing_wikipedia", "difficulty": "medium", "what_it_tests": "User nói rõ 'Wikipedia về <người>' → dùng search_wikipedia, không phải web_search."}
+    },
+    {
+      "id": "G02_arxiv_id_read_vs_search",
+      "phase": "B",
+      "query": "Đọc paper này giúp mình: https://arxiv.org/abs/1706.03762",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "get_arxiv_paper_text", "args": {"arxiv_url": "https://arxiv.org/abs/1706.03762"}}]},
+      "metadata": {"skill": "routing_arxiv_read_vs_search", "difficulty": "medium", "what_it_tests": "Đã có arxiv URL cụ thể → get_arxiv_paper_text để đọc nội dung, KHÔNG dùng arxiv_search."}
+    },
+    {
+      "id": "G03_timeframe_month",
+      "phase": "B",
+      "query": "Tin công nghệ trong tháng này",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "web_search", "args": {"topic": "news", "timeframe": "month"}}]},
+      "metadata": {"skill": "arg_timeframe_month", "difficulty": "medium", "what_it_tests": "'tháng này' → timeframe=month, không phải week hoặc day."}
+    },
+    {
+      "id": "G04_out_of_scope_recipe",
+      "phase": "B",
+      "query": "Cho mình công thức nấu phở bò",
+      "failure_type": "out_of_scope",
+      "expect": {"no_tool": true, "behavior": "refuse"},
+      "metadata": {"skill": "out_of_scope_recipe", "difficulty": "easy", "what_it_tests": "Câu hỏi nấu ăn hoàn toàn ngoài phạm vi research/news → KHÔNG gọi bất kỳ tool nào, từ chối lịch sự."}
+    },
+    {
+      "id": "G05_translate_missing_text",
+      "phase": "B",
+      "query": "Dịch sang tiếng Anh giúp mình",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "ask_user", "args": {"response_type": "text"}}]},
+      "metadata": {"skill": "clarify_missing_translate_text", "difficulty": "medium", "what_it_tests": "User muốn dịch nhưng không cung cấp văn bản → ask_user xin nội dung, không gọi translate_text với text rỗng."}
+    },
+    {
+      "id": "G06_multiturn_translate_correction",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Dịch đoạn này sang tiếng Pháp: 'Hello world'"},
+        {"role": "user", "content": "Thật ra dịch sang tiếng Tây Ban Nha thôi"},
+        {"role": "user", "content": "Vẫn câu đó nhé: 'Hello world'"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "translate_text", "args": {"text": "Hello world", "target_language": "spanish"}}]},
+      "metadata": {"skill": "multiturn_translate_correction", "difficulty": "medium", "what_it_tests": "3 turns: sửa ngôn ngữ đích từ french→spanish, giữ nguyên text 'Hello world' từ lượt 1."}
+    },
+    {
+      "id": "G07_multiturn_wikipedia_then_summarize",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Cho mình thông tin Wikipedia về Albert Einstein"},
+        {"role": "user", "content": "Tóm tắt ngắn lại thôi"},
+        {"role": "user", "content": "Vẫn về Einstein nhé, chỉ 3 câu thôi"}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "summarize_wikipedia", "args": {"person_name": "Albert Einstein", "max_sentences": 3}}]},
+      "metadata": {"skill": "multiturn_switch_to_summarize", "difficulty": "medium", "what_it_tests": "3 turns: lượt 1 dùng search_wikipedia, lượt sau yêu cầu 'tóm tắt ngắn' → chuyển sang summarize_wikipedia, giữ đúng person_name và max_sentences=3."}
+    },
+    {
+      "id": "G08_multiturn_arxiv_search_then_read",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tìm paper về transformer trên arXiv"},
+        {"role": "user", "content": "Đọc paper đầu tiên đi, đây là link: https://arxiv.org/abs/1706.03762"},
+        {"role": "user", "content": "Chỉ đọc link đó thôi"}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "get_arxiv_paper_text", "args": {"arxiv_url": "https://arxiv.org/abs/1706.03762"}}]},
+      "metadata": {"skill": "multiturn_arxiv_search_then_read", "difficulty": "medium", "what_it_tests": "3 turns: lượt 1 tìm bằng arxiv_search, lượt sau user đưa link cụ thể → chuyển sang get_arxiv_paper_text với đúng URL."}
+    },
+    {
+      "id": "G09_multiturn_confirm_then_send",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Đăng bản tin này lên Telegram giúp mình: 'AI news digest hôm nay...'"},
+        {"role": "user", "content": "Ừ, gửi đi"},
+        {"role": "user", "content": "Đúng rồi, xác nhận gửi"}
+      ],
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "send_telegram", "args": {"confirmed": true}}]},
+      "metadata": {"skill": "multiturn_confirm_then_send", "difficulty": "hard", "what_it_tests": "3 turns: lượt 1 yêu cầu gửi → ask_user yes_no; lượt 2-3 user xác nhận → send_telegram với confirmed=true."}
+    },
+    {
+      "id": "G10_multiturn_carryover_limit_switch_account",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Lấy 7 tweet mới nhất của Sam Altman"},
+        {"role": "user", "content": "Đổi sang Andrej Karpathy"},
+        {"role": "user", "content": "Giữ đúng 7 tweet nhé"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "get_user_tweets", "args": {"screenname": "karpathy", "limit": 7}}]},
+      "metadata": {"skill": "multiturn_carryover_limit_switch_account", "difficulty": "hard", "what_it_tests": "3 turns: carry limit=7 từ lượt 1, map tên Andrej Karpathy→karpathy từ lượt 2, lượt 3 xác nhận giữ limit."}
+    }
+  ]
 }
