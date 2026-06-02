@@ -1,0 +1,414 @@
+{
+  "dataset_id": "day04_v2_group_v1_all_tools",
+  "dataset_role": "group",
+  "description": "Cases do nhóm viết — bao phủ toàn bộ 13 tools trong tools.yaml: ask_user, get_user_tweets, search_tweets, web_search, read_url, render_digest, send_telegram, search_company_policy, arxiv_search, get_arxiv_paper_text, search_wikipedia, translate_text, summarize_wikipedia.",
+  "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
+  "cases": [
+
+    {
+      "id": "G01_ask_user_missing_handle",
+      "phase": "B",
+      "query": "Cho mình xem 5 tweet mới nhất đi",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "ask_user", "args": {"response_type": "text"}}]},
+      "metadata": {
+        "skill": "ask_user_missing_handle",
+        "difficulty": "medium",
+        "what_it_tests": "Thiếu handle/tên người → ask_user(response_type=text), không tự đoán tài khoản."
+      }
+    },
+
+    {
+      "id": "G02_ask_user_choice",
+      "phase": "B",
+      "query": "Tìm tin AI nhưng mình chưa biết muốn tìm trên Twitter hay web",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "ask_user", "args": {"response_type": "choice"}}]},
+      "metadata": {
+        "skill": "ask_user_choice",
+        "difficulty": "medium",
+        "what_it_tests": "User chưa chắc nguồn → ask_user(response_type=choice) với options Twitter/web, không tự gọi tool."
+      }
+    },
+
+    {
+      "id": "G03_get_user_tweets_handle_mapping",
+      "phase": "B",
+      "query": "Lấy tweet mới nhất của Andrej Karpathy",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "get_user_tweets", "args": {"screenname": "karpathy"}}]},
+      "metadata": {
+        "skill": "get_user_tweets_name_to_handle",
+        "difficulty": "medium",
+        "what_it_tests": "Map tên đầy đủ Andrej Karpathy → handle karpathy (không có @)."
+      }
+    },
+
+    {
+      "id": "G04_get_user_tweets_limit",
+      "phase": "B",
+      "query": "Lấy 3 tweet mới nhất của elonmusk",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "get_user_tweets", "args": {"screenname": "elonmusk", "limit": 3}}]},
+      "metadata": {
+        "skill": "get_user_tweets_limit_arg",
+        "difficulty": "easy",
+        "what_it_tests": "'3 tweet' → limit=3, không để default 5."
+      }
+    },
+
+    {
+      "id": "G05_search_tweets_topic_not_person",
+      "phase": "B",
+      "query": "Mọi người đang nói gì về ChatGPT trên Twitter?",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "search_tweets", "args": {"query": "ChatGPT"}}]},
+      "metadata": {
+        "skill": "search_tweets_by_topic",
+        "difficulty": "easy",
+        "what_it_tests": "Tweet theo chủ đề → search_tweets, không phải get_user_tweets."
+      }
+    },
+
+    {
+      "id": "G06_search_tweets_top",
+      "phase": "B",
+      "query": "Tweet phổ biến nhất về Gemini AI",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "search_tweets", "args": {"query": "Gemini AI", "search_type": "Top"}}]},
+      "metadata": {
+        "skill": "search_tweets_search_type_top",
+        "difficulty": "medium",
+        "what_it_tests": "'phổ biến nhất' → search_type=Top, không phải Latest."
+      }
+    },
+
+    {
+      "id": "G07_web_search_news_today",
+      "phase": "B",
+      "query": "Tin tức về AI hôm nay",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "web_search", "args": {"topic": "news", "timeframe": "day"}}]},
+      "metadata": {
+        "skill": "web_search_news_today",
+        "difficulty": "medium",
+        "what_it_tests": "'tin tức' → topic=news; 'hôm nay' → timeframe=day."
+      }
+    },
+
+    {
+      "id": "G08_web_search_general_no_timeframe",
+      "phase": "B",
+      "query": "Tìm thông tin về mô hình ngôn ngữ lớn",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "web_search", "args": {"topic": "general"}}]},
+      "metadata": {
+        "skill": "web_search_general",
+        "difficulty": "easy",
+        "what_it_tests": "Research chung không phải tin thời sự → web_search topic=general."
+      }
+    },
+
+    {
+      "id": "G09_read_url_has_link",
+      "phase": "B",
+      "query": "Đọc bài này giúp mình: https://huggingface.co/blog/llm-perf-leaderboard",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "read_url", "args": {"url": "https://huggingface.co/blog/llm-perf-leaderboard"}}]},
+      "metadata": {
+        "skill": "read_url_given_link",
+        "difficulty": "easy",
+        "what_it_tests": "Đã có URL cụ thể → read_url, không phải web_search."
+      }
+    },
+
+    {
+      "id": "G10_read_url_missing_url",
+      "phase": "B",
+      "query": "Tóm tắt bài blog mình vừa đọc",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "ask_user", "args": {"response_type": "text"}}]},
+      "metadata": {
+        "skill": "read_url_missing_url",
+        "difficulty": "medium",
+        "what_it_tests": "Không có URL → ask_user xin link, không gọi read_url với URL rỗng."
+      }
+    },
+
+    {
+      "id": "G11_render_digest_after_data",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tìm 3 tin AI tuần này"},
+        {"role": "user", "content": "Bây giờ format thành digest dạng bullets cho mình"},
+        {"role": "user", "content": "Dùng template bullets nhé"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "render_digest", "args": {"template": "bullets"}}]},
+      "metadata": {
+        "skill": "render_digest_template_arg",
+        "difficulty": "medium",
+        "what_it_tests": "Sau khi đã có data, user yêu cầu format → render_digest template=bullets; không fetch dữ liệu mới."
+      }
+    },
+
+    {
+      "id": "G12_render_digest_not_for_fetch",
+      "phase": "B",
+      "query": "Lấy tin AI mới nhất dạng digest cho mình",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "web_search", "args": {"topic": "news"}}]},
+      "metadata": {
+        "skill": "render_digest_not_for_fetch",
+        "difficulty": "medium",
+        "what_it_tests": "Chưa có data → phải fetch trước (web_search), không gọi render_digest ngay."
+      }
+    },
+
+    {
+      "id": "G13_send_telegram_confirm_first",
+      "phase": "B",
+      "query": "Gửi bản tin này lên kênh Telegram của nhóm",
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "ask_user", "args": {"response_type": "yes_no"}}]},
+      "metadata": {
+        "skill": "send_telegram_confirm_boundary",
+        "difficulty": "medium",
+        "what_it_tests": "Hành động gửi → phải ask_user(yes_no) xác nhận trước, không tự gọi send_telegram."
+      }
+    },
+
+    {
+      "id": "G14_send_telegram_after_confirm",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Gửi tin này lên Telegram: AI hôm nay có nhiều update mới."},
+        {"role": "user", "content": "Ừ gửi đi"},
+        {"role": "user", "content": "Xác nhận gửi nhé"}
+      ],
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "send_telegram", "args": {"text": "AI hôm nay có nhiều update mới.", "confirmed": true}}]},
+      "metadata": {
+        "skill": "send_telegram_confirmed_true",
+        "difficulty": "hard",
+        "what_it_tests": "Sau khi user xác nhận rõ → send_telegram(confirmed=true), carry đúng nội dung text từ lượt 1."
+      }
+    },
+
+    {
+      "id": "G15_search_company_policy_routing",
+      "phase": "B",
+      "query": "Quy định của công ty về việc đăng tweet viral là nguồn fact không?",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "search_company_policy", "args": {"policy_area": "source_citation"}}]},
+      "metadata": {
+        "skill": "search_company_policy_area_mapping",
+        "difficulty": "medium",
+        "what_it_tests": "Hỏi về citation/fact → policy_area=source_citation, không phải area khác hay web_search."
+      }
+    },
+
+    {
+      "id": "G16_search_company_policy_privacy",
+      "phase": "B",
+      "query": "Công ty có quy định gì về việc dùng API key của khách hàng không?",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "search_company_policy", "args": {"policy_area": "data_privacy"}}]},
+      "metadata": {
+        "skill": "search_company_policy_data_privacy",
+        "difficulty": "medium",
+        "what_it_tests": "Hỏi về API key/customer data → policy_area=data_privacy."
+      }
+    },
+
+    {
+      "id": "G17_arxiv_search_routing",
+      "phase": "B",
+      "query": "Tìm paper nghiên cứu về RAG gần đây",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "arxiv_search", "args": {"query": "RAG retrieval augmented generation"}}]},
+      "metadata": {
+        "skill": "arxiv_search_routing",
+        "difficulty": "medium",
+        "what_it_tests": "Hỏi paper/research/literature → arxiv_search, không phải web_search."
+      }
+    },
+
+    {
+      "id": "G18_arxiv_search_sort_by_date",
+      "phase": "B",
+      "query": "Paper mới nhất về AI agents nộp lên arXiv",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "arxiv_search", "args": {"query": "AI agents", "sort_by": "submittedDate"}}]},
+      "metadata": {
+        "skill": "arxiv_search_sort_by_submitted",
+        "difficulty": "medium",
+        "what_it_tests": "'mới nhất nộp lên' → sort_by=submittedDate, không để default relevance."
+      }
+    },
+
+    {
+      "id": "G19_get_arxiv_paper_text_routing",
+      "phase": "B",
+      "query": "Đọc paper arXiv này cho mình: https://arxiv.org/abs/1706.03762",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "get_arxiv_paper_text", "args": {"arxiv_url": "https://arxiv.org/abs/1706.03762"}}]},
+      "metadata": {
+        "skill": "get_arxiv_paper_text_routing",
+        "difficulty": "easy",
+        "what_it_tests": "User đưa arXiv URL để đọc nội dung → get_arxiv_paper_text, không phải arxiv_search hay read_url."
+      }
+    },
+
+    {
+      "id": "G20_get_arxiv_paper_text_max_pages",
+      "phase": "B",
+      "query": "Đọc 10 trang đầu của paper 2305.10601",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "get_arxiv_paper_text", "args": {"arxiv_url": "2305.10601", "max_pages": 10}}]},
+      "metadata": {
+        "skill": "get_arxiv_paper_text_max_pages",
+        "difficulty": "medium",
+        "what_it_tests": "'10 trang đầu' → max_pages=10, không để default 5."
+      }
+    },
+
+    {
+      "id": "G21_search_wikipedia_routing",
+      "phase": "B",
+      "query": "Tìm Wikipedia về Geoffrey Hinton cho mình",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "search_wikipedia", "args": {"person_name": "Geoffrey Hinton"}}]},
+      "metadata": {
+        "skill": "search_wikipedia_routing",
+        "difficulty": "easy",
+        "what_it_tests": "User nói rõ 'Wikipedia' + tên người → search_wikipedia, không phải web_search."
+      }
+    },
+
+    {
+      "id": "G22_search_wikipedia_language",
+      "phase": "B",
+      "query": "Tìm Wikipedia tiếng Nhật về Akira Kurosawa",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "search_wikipedia", "args": {"person_name": "Akira Kurosawa", "language": "ja"}}]},
+      "metadata": {
+        "skill": "search_wikipedia_language_arg",
+        "difficulty": "medium",
+        "what_it_tests": "'tiếng Nhật' → language=ja, không để default en."
+      }
+    },
+
+    {
+      "id": "G23_translate_text_routing",
+      "phase": "B",
+      "query": "Dịch đoạn này sang tiếng Anh: Học máy đang thay đổi thế giới.",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "translate_text", "args": {"text": "Học máy đang thay đổi thế giới.", "target_language": "en"}}]},
+      "metadata": {
+        "skill": "translate_text_routing",
+        "difficulty": "easy",
+        "what_it_tests": "User nói 'dịch' + văn bản → translate_text, không gọi web_search hay tool nào khác."
+      }
+    },
+
+    {
+      "id": "G24_translate_text_missing_content",
+      "phase": "B",
+      "query": "Dịch sang tiếng Hàn giúp mình",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "ask_user", "args": {"response_type": "text"}}]},
+      "metadata": {
+        "skill": "translate_text_missing_content",
+        "difficulty": "medium",
+        "what_it_tests": "Thiếu văn bản cần dịch → ask_user xin nội dung, không gọi translate_text rỗng."
+      }
+    },
+
+    {
+      "id": "G25_summarize_wikipedia_routing",
+      "phase": "B",
+      "query": "Tóm tắt ngắn Wikipedia về Ada Lovelace",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "summarize_wikipedia", "args": {"person_name": "Ada Lovelace"}}]},
+      "metadata": {
+        "skill": "summarize_wikipedia_routing",
+        "difficulty": "easy",
+        "what_it_tests": "'Tóm tắt ngắn Wikipedia' → summarize_wikipedia, không phải search_wikipedia hay web_search."
+      }
+    },
+
+    {
+      "id": "G26_summarize_vs_search_wikipedia",
+      "phase": "B",
+      "query": "Cho mình đọc phần giới thiệu đầy đủ trên Wikipedia về Isaac Newton",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "search_wikipedia", "args": {"person_name": "Isaac Newton"}}]},
+      "metadata": {
+        "skill": "search_wikipedia_not_summarize",
+        "difficulty": "medium",
+        "what_it_tests": "'giới thiệu đầy đủ' → search_wikipedia (nhiều câu hơn); summarize_wikipedia chỉ khi user muốn tóm tắt súc tích."
+      }
+    },
+
+    {
+      "id": "G27_multiturn_wikipedia_then_translate",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tóm tắt Wikipedia về Marie Curie"},
+        {"role": "user", "content": "Dịch bản tóm tắt đó sang tiếng Việt"},
+        {"role": "user", "content": "Chỉ dịch đoạn vừa tóm tắt thôi"}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "translate_text", "args": {"target_language": "vi"}}]},
+      "metadata": {
+        "skill": "multiturn_summarize_then_translate",
+        "difficulty": "hard",
+        "what_it_tests": "Sau khi đã có bản tóm tắt, user yêu cầu dịch → translate_text target=vi; không gọi lại summarize_wikipedia."
+      }
+    },
+
+    {
+      "id": "G28_out_of_scope_no_tool",
+      "phase": "B",
+      "query": "Giải phương trình x^2 - 5x + 6 = 0",
+      "failure_type": "out_of_scope",
+      "expect": {"no_tool": true, "behavior": "refuse"},
+      "metadata": {
+        "skill": "out_of_scope_math",
+        "difficulty": "easy",
+        "what_it_tests": "Câu hỏi toán học ngoài phạm vi research → không gọi bất kỳ tool nào, từ chối/định hướng."
+      }
+    },
+
+    {
+      "id": "G29_unnecessary_tool_meta_question",
+      "phase": "B",
+      "query": "Agent này có thể làm được gì?",
+      "failure_type": "unnecessary_tool",
+      "expect": {"no_tool": true, "behavior": "answer_without_tool"},
+      "metadata": {
+        "skill": "no_tool_meta_question",
+        "difficulty": "easy",
+        "what_it_tests": "Câu hỏi meta về khả năng agent → trả lời thẳng, KHÔNG gọi tool."
+      }
+    },
+
+    {
+      "id": "G30_multiturn_switch_source",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tìm tweet về Claude AI"},
+        {"role": "user", "content": "Thôi bỏ Twitter, tìm trên web đi"},
+        {"role": "user", "content": "Vẫn về Claude AI, tin tuần này"}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "web_search", "args": {"query": "Claude AI", "topic": "news", "timeframe": "week"}}]},
+      "metadata": {
+        "skill": "multiturn_switch_twitter_to_web",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: chuyển từ search_tweets sang web_search, carry topic Claude AI, timeframe=week từ 'tuần này'."
+      }
+    }
+  ]
+}
