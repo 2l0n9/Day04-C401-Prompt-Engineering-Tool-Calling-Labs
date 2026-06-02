@@ -1,0 +1,28 @@
+{
+  "transcript_id": "v0_openrouter_20260602T144642749761",
+  "version": "v0",
+  "artifact_version": "v0+pfdb8ec26da97+teb137437d050",
+  "prompt_hash": "fdb8ec26da97369a30bfe877d2c6ddf68a78c90da764818c4adec842630ac507",
+  "tools_hash": "eb137437d050d18eacad92a169ff9a020967d00018384f3c67014ee0e4b3ec57",
+  "provider": "openrouter",
+  "model": "openai/gpt-4o-mini",
+  "system_prompt": "C:\\Users\\kienm\\Day04-C401-Prompt-Engineering-Tool-Calling-Labs\\starter\\artifacts\\system_prompt.md",
+  "tools": "C:\\Users\\kienm\\Day04-C401-Prompt-Engineering-Tool-Calling-Labs\\starter\\artifacts\\tools.yaml",
+  "history_window": 5,
+  "max_tool_rounds": 4,
+  "created_at": "2026-06-02T14:46:42",
+  "updated_at": "2026-06-02T14:47:33",
+  "turns": [
+    {
+      "turn_index": 1,
+      "started_at": "2026-06-02T14:46:48",
+      "user": "game",
+      "status": "provider_error",
+      "assistant_text": null,
+      "rounds": [],
+      "tool_events": [],
+      "error": "RuntimeError: Missing API key env var: OPENROUTER_API_KEY",
+      "ended_at": "2026-06-02T14:46:49"
+    }
+  ]
+}
